@@ -25,6 +25,7 @@ public class Calculator {
     JFrame frame = new JFrame("Calculator");
     JTextField expression_TextField = new JTextField(expression,20);
     JTextField result_TextField = new JTextField(result,20);
+    JButton button_PtoN = new JButton("±");
     JButton button_C = new JButton("C");
     JButton button_CE = new JButton("CE");
     JButton button_dengyu = new JButton("=");
@@ -87,8 +88,8 @@ public class Calculator {
 
         JPanel pan_5 = new JPanel();
         pan_5.setLayout(new GridLayout(1,5,5,5));
-        pan_5.add(button_zuokuohao); pan_5.add(button_youkuohao); pan_5.add(button_CE);
-        pan_5.add(button_C); pan_5.add(button_backspace);
+        pan_5.add(button_zuokuohao); pan_5.add(button_youkuohao); pan_5.add(button_PtoN);
+        pan_5.add(button_CE); pan_5.add(button_C); pan_5.add(button_backspace);
 
         //二级组件
         JPanel pan_center = new JPanel();
@@ -160,7 +161,7 @@ public class Calculator {
                         case 1:             //栈顶元素优先级高
                             theta = OPTR.pop();
                             a = OPND.pop(); b = OPND.pop();
-                            String res = cal(a,b,theta);
+                            String res = cal(b,a,theta);
                             OPND.push(res);
                             result_TextField.setText(res);
                             break;
@@ -178,15 +179,15 @@ public class Calculator {
             public void actionPerformed(ActionEvent e){
                 if (num.equals("")) {
                     num = "0.0";
-                    expression = num;
-                    expression_TextField.setText(expression);
+//                    expression = num;
+//                    expression_TextField.setText(expression);
                 }
                 else{
                     int is = isIntegerOrDouble(num);
                     if (is == 1){
                         num = num + ".0";
-                        expression = expression + ".";
-                        expression_TextField.setText(expression);
+//                        expression = expression + ".";
+//                        expression_TextField.setText(expression);
                     }
                     else
                     if (is != 0) result_TextField.setText("Number error");
@@ -215,7 +216,7 @@ public class Calculator {
                     String ope = OPTR.pop();
                     String n1 = OPND.pop();
                     String n2 = OPND.pop();
-                    String ans = cal(n1,n2,ope);
+                    String ans = cal(n2,n1,ope);
                     if (OPND.isEmpty() && OPTR.peek().equals("#")){
                         num = "";
                         result_TextField.setText(ans);
@@ -257,6 +258,17 @@ public class Calculator {
                 }
             }
         }
+
+        class Listener_PtoN implements ActionListener{
+            public void actionPerformed(ActionEvent e){
+                if (!num.equals("")){
+                    if (num.substring(0,0) == "-") num = num.substring(1,num.length()-1);
+                    else
+                        num = "-" + num;
+                }
+                result_TextField.setText(num);
+            }
+        }
         //注册监听器，即绑定事件响应逻辑到各个UI组件上
         //监听等于键
         Listener_dy jt_dy = new Listener_dy();
@@ -272,7 +284,8 @@ public class Calculator {
         Listener_CE jt_CE = new Listener_CE();
         //监听backspace键
         Listener_backspace jt_backspace = new Listener_backspace();
-
+        //监听PtoN键
+        Listener_PtoN jt_PtoN = new Listener_PtoN();
         //绑定监听器
         button7.addActionListener(jt_num);
         button8.addActionListener(jt_num);
@@ -295,6 +308,7 @@ public class Calculator {
         button_backspace.addActionListener(jt_backspace);
         button_zuokuohao.addActionListener(jt_signal);
         button_youkuohao.addActionListener(jt_signal);
+        button_PtoN.addActionListener(jt_PtoN);
 
         frame.addWindowListener(new WindowAdapter() {
             @Override
