@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Calculator {
+    String expression="";
     String result="";
     String num="";
 //    String signal = "";
@@ -22,6 +23,7 @@ public class Calculator {
                         {-1,-1,-1,-1,-1,-2,0}};
     //声明UI组件并初始化
     JFrame frame = new JFrame("Calculator");
+    JTextField expression_TextField = new JTextField(expression,20);
     JTextField result_TextField = new JTextField(result,20);
     JButton button_C = new JButton("C");
     JButton button_CE = new JButton("CE");
@@ -64,7 +66,7 @@ public class Calculator {
 
         //设置文本框为右对齐，使输入和结果都靠右显示
         result_TextField.setHorizontalAlignment(JTextField.RIGHT);
-
+        expression_TextField.setHorizontalAlignment(JTextField.RIGHT);
         //将UI组件添加至容器内
         //三级组件
         JPanel pan_1 = new JPanel();
@@ -96,7 +98,8 @@ public class Calculator {
 
         JPanel pan_north = new JPanel();
         pan_north.setLayout(new BorderLayout());
-        pan_north.add(result_TextField,BorderLayout.CENTER);
+        pan_north.add(result_TextField,BorderLayout.SOUTH);
+        pan_north.add(expression_TextField,BorderLayout.NORTH);
         //一级组件
         frame.setLocation(300,200);
         frame.setResizable(false);
@@ -129,8 +132,17 @@ public class Calculator {
                 String ss = ((JButton) e.getSource()).getText();
                 String a;       //两个操作数
                 String b;
+
                 //遇到操作符判断是不是有数字，有的话就把以前的数字入栈，并恢复为初始状态
-                if (!num.equals("")) OPND.push(num);
+                if (ss.equals("(")){
+                    expression = expression + ss;
+                    expression_TextField.setText(expression);
+                }else
+                    if (!num.equals("")){
+                        OPND.push(num);
+                        expression = expression + num + ss;
+                        expression_TextField.setText(expression);
+                    }
                 num = "";
 
 //            signal = ss;
@@ -164,11 +176,18 @@ public class Calculator {
         //小数点
         class Listener_doc implements ActionListener{
             public void actionPerformed(ActionEvent e){
-                if (num.equals("")) num = "0.0";
+                if (num.equals("")) {
+                    num = "0.0";
+                    expression = num;
+                    expression_TextField.setText(expression);
+                }
                 else{
                     int is = isIntegerOrDouble(num);
-                    if (is == 1)
+                    if (is == 1){
                         num = num + ".0";
+                        expression = expression + ".";
+                        expression_TextField.setText(expression);
+                    }
                     else
                     if (is != 0) result_TextField.setText("Number error");
                 }
@@ -178,28 +197,32 @@ public class Calculator {
         //等于号
         class Listener_dy implements ActionListener{
             public void actionPerformed(ActionEvent e){
-                if (num.equals("")){
-                    result_TextField.setText("2:Grammar error");
+                expression = "";
+                expression_TextField.setText(expression);
+                if (!num.equals("")){
+                    OPND.push(num);
+                    num = "";
+//                    result_TextField.setText("2:Grammar error");
                     //错误处理
                 }
-                else{
-                    while (!(OPND.isEmpty() && OPTR.peek().equals("#"))){
-                        //运算无法进行下去
-                        if ((!OPND.isEmpty() && OPTR.peek().equals("#")) || (OPND.isEmpty() && !OPTR.peek().equals("#"))){
-                            result_TextField.setText("3:Grammar error");
-                            break;
-                        }
-                        String ope = OPTR.pop();
-                        String n = OPND.pop();
-                        String ans = cal(n,num,ope);
-                        if (OPND.isEmpty() && OPTR.peek().equals("#")){
-                            num = "";
-                            result_TextField.setText(ans);
-                            break;
-                        }else{
-                            num = ans;
-//                        OPND.push(ans);
-                        }
+
+                while (!(OPND.isEmpty() && OPTR.peek().equals("#"))){
+                    //运算无法进行下去
+                    if ((!OPND.isEmpty() && OPTR.peek().equals("#")) || (OPND.isEmpty() && !OPTR.peek().equals("#"))){
+                        result_TextField.setText("3:Grammar error");
+                        break;
+                    }
+                    String ope = OPTR.pop();
+                    String n1 = OPND.pop();
+                    String n2 = OPND.pop();
+                    String ans = cal(n1,n2,ope);
+                    if (OPND.isEmpty() && OPTR.peek().equals("#")){
+                        num = "";
+                        result_TextField.setText(ans);
+                        break;
+                    }else{
+                        OPND.push(ans);
+//                       OPND.push(ans);
                     }
                 }
             }
@@ -211,6 +234,8 @@ public class Calculator {
                 num = "";
                 result = "";
                 result_TextField.setText(result);
+                expression = "";
+                expression_TextField.setText(expression);
                 //栈清空
                 while (!OPND.isEmpty()) OPND.pop();
                 while (!OPTR.peek().equals("#")) OPTR.pop();
